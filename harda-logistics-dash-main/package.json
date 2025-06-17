@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "server": "node server.js",
-    "client": "npm run dev"
+    "client": "npm run build"
   },
   "dependencies": {
     "@capacitor/android": "^7.3.0",
