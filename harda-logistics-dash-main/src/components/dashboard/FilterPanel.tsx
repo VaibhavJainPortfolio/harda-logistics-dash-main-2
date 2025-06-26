@@ -1,7 +1,10 @@
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Card, CardContent, CardHeader, CardTitle
+} from "@/components/ui/card";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
@@ -10,39 +13,41 @@ import { Label } from "@/components/ui/label";
 import { Filter, RotateCcw, Search } from 'lucide-react';
 import { ERPData } from './ComplianceKPICards';
 
+interface FilterState {
+  branchId: string;
+  bankName: string;
+  stateName: string;
+  balanceRange: number[];
+  searchTerm: string;
+  year: string;
+  accountStatus: string;
+}
+
 interface FilterPanelProps {
-  filters: {
-    branchId: string;
-    bankName: string;
-    stateName: string;
-    balanceRange: number[];
-    searchTerm: string;
-    year: string;
-    accountStatus: string;
-  };
-  setFilters: React.Dispatch<React.SetStateAction<{
-    branchId: string;
-    bankName: string;
-    stateName: string;
-    balanceRange: number[];
-    searchTerm: string;
-    year: string;
-    accountStatus: string;
-  }>>;
+  filters: FilterState;
+  setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   maxBalance: number;
   data: ERPData;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalance, data }) => {
-  const uniqueBranches: string[] = Array.from(new Set<number>(data.accounts.map(acc => acc.branchId)))
-  .sort((a, b) => a - b)
-  .map(id => id.toString());
+  const accounts = data?.accounts || [];
+  const bankDetails = data?.bankDetails || [];
+  const gstDetails = data?.gstDetails || [];
 
-  const uniqueBanks: string[] = Array.from(new Set(data.bankDetails.map(bank => bank.bank)) as Set<string>).sort();
+  const uniqueBranches: string[] = Array.from(
+    new Set(accounts.map(acc => acc.branchId).filter(Boolean))
+  )
+    .sort((a: any, b: any) => a - b)
+    .map(id => id.toString());
 
-
-  const uniqueStates: string[] = Array.from(new Set<string>(data.gstDetails.map(gst => gst.stateName))).sort();
-
+    const uniqueBanks: string[] = Array.from(
+      new Set<string>(bankDetails.map(bank => bank.bank).filter(Boolean))
+    ).sort();
+    
+    const uniqueStates: string[] = Array.from(
+      new Set<string>(gstDetails.map(gst => gst.stateName).filter(Boolean))
+    ).sort();
 
   const resetFilters = () => {
     setFilters({
@@ -80,9 +85,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalan
                 {activeFiltersCount} active
               </Badge>
             )}
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={resetFilters}
               className="h-8 w-8 p-0"
             >
@@ -91,6 +96,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalan
           </div>
         </CardTitle>
       </CardHeader>
+
       <CardContent className="space-y-6">
         {/* Search */}
         <div className="space-y-2">
@@ -102,20 +108,22 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalan
             <Input
               placeholder="Search accounts..."
               value={filters.searchTerm}
-              onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
+              onChange={(e) =>
+                setFilters(prev => ({ ...prev, searchTerm: e.target.value }))
+              }
               className="pl-10 bg-white/70 border-gray-200 focus:border-blue-300 focus:ring-blue-200"
             />
           </div>
         </div>
 
-        {/* Year Filter */}
+        {/* Financial Year */}
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">
             Financial Year
           </Label>
           <Select
             value={filters.year}
-            onValueChange={(value) => setFilters(prev => ({ ...prev, year: value }))}
+            onValueChange={value => setFilters(prev => ({ ...prev, year: value }))}
           >
             <SelectTrigger className="bg-white/70 border-gray-200 focus:border-blue-300 focus:ring-blue-200">
               <SelectValue placeholder="Select year" />
@@ -129,14 +137,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalan
           </Select>
         </div>
 
-        {/* Account Status Filter */}
+        {/* Account Status */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">
-            Account Status
-          </Label>
+          <Label className="text-sm font-medium text-gray-700">Account Status</Label>
           <Select
             value={filters.accountStatus}
-            onValueChange={(value) => setFilters(prev => ({ ...prev, accountStatus: value }))}
+            onValueChange={value => setFilters(prev => ({ ...prev, accountStatus: value }))}
           >
             <SelectTrigger className="bg-white/70 border-gray-200 focus:border-blue-300 focus:ring-blue-200">
               <SelectValue placeholder="Select status" />
@@ -151,12 +157,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalan
 
         {/* Branch Filter */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">
-            Branch
-          </Label>
+          <Label className="text-sm font-medium text-gray-700">Branch</Label>
           <Select
             value={filters.branchId}
-            onValueChange={(value) => setFilters(prev => ({ ...prev, branchId: value }))}
+            onValueChange={value => setFilters(prev => ({ ...prev, branchId: value }))}
           >
             <SelectTrigger className="bg-white/70 border-gray-200 focus:border-blue-300 focus:ring-blue-200">
               <SelectValue placeholder="Select branch" />
@@ -164,7 +168,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalan
             <SelectContent>
               <SelectItem value="all">All Branches</SelectItem>
               {uniqueBranches.map(branchId => (
-                <SelectItem key={branchId} value={branchId.toString()}>
+                <SelectItem key={branchId} value={branchId}>
                   Branch {branchId}
                 </SelectItem>
               ))}
@@ -174,12 +178,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalan
 
         {/* Bank Filter */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">
-            Bank
-          </Label>
+          <Label className="text-sm font-medium text-gray-700">Bank</Label>
           <Select
             value={filters.bankName}
-            onValueChange={(value) => setFilters(prev => ({ ...prev, bankName: value }))}
+            onValueChange={value => setFilters(prev => ({ ...prev, bankName: value }))}
           >
             <SelectTrigger className="bg-white/70 border-gray-200 focus:border-blue-300 focus:ring-blue-200">
               <SelectValue placeholder="Select bank" />
@@ -197,12 +199,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalan
 
         {/* State Filter */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">
-            State
-          </Label>
+          <Label className="text-sm font-medium text-gray-700">State</Label>
           <Select
             value={filters.stateName}
-            onValueChange={(value) => setFilters(prev => ({ ...prev, stateName: value }))}
+            onValueChange={value => setFilters(prev => ({ ...prev, stateName: value }))}
           >
             <SelectTrigger className="bg-white/70 border-gray-200 focus:border-blue-300 focus:ring-blue-200">
               <SelectValue placeholder="Select state" />
@@ -226,9 +226,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalan
           <div className="px-2">
             <Slider
               value={filters.balanceRange}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, balanceRange: value }))}
-              max={maxBalance}
+              onValueChange={value => setFilters(prev => ({ ...prev, balanceRange: value }))}
               min={0}
+              max={maxBalance}
               step={10000}
               className="w-full"
             />
