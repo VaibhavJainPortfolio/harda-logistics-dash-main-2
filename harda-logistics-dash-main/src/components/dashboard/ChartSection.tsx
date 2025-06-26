@@ -17,12 +17,22 @@ import {
   Area,
   AreaChart
 } from 'recharts';
-import { MockERPData, AccountMaster } from '@/data/mockERPData';
+import { AccountMaster} from '@/types';
+import { useERPData } from '@/hooks/useERPData';
 import { TrendingUp, PieChart as PieChartIcon, BarChart3, MapPin } from 'lucide-react';
+
+interface useERPData {
+  vehicles: any[];
+  drivers: any[];
+  routes: any[];
+  openingBalances: { acCode: string; opBalance: number }[];
+  gstDetails: { acCode: string; stateName: string }[];
+  bankDetails: { accountNo: string; bank: string }[];
+}
 
 interface ChartSectionProps {
   filteredData: AccountMaster[];
-  allData: MockERPData;
+  allData: useERPData;
 }
 
 const COLORS = [

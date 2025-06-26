@@ -13,7 +13,6 @@ import ComplianceInsights from './dashboard/ComplianceInsights';
 import DataTable from './dashboard/DataTable';
 import FilterPanel from './dashboard/FilterPanel';
 import { useERPData } from '@/hooks/useERPData';
-import { mockComplianceData } from '@/data/mockComplianceData';
 import { useFilteredERPData } from '@/hooks/useFilteredERPData';
 
 
@@ -39,16 +38,58 @@ const tabListRef = useRef(null);
 const filteredData = useFilteredERPData(erpData, filters);
 
   if (loading) {
-    return <div className="p-4">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600" />
+      </div>
+    );
   }
   
   if (error) {
-    return <div className="p-4 text-red-600">Error: {error}</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-3 text-red-600">
+        <svg
+          className="w-12 h-12 text-red-600"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 9v3m0 3h.01m-6.938 4h13.856c1.54 0 2.502-1.665 1.732-3L13.732 4c-.77-1.335-2.694-1.335-3.464 0L3.34 16c-.77 1.335.192 3 1.732 3z"
+          />
+        </svg>
+        <div className="text-lg font-semibold">Something went wrong</div>
+        <div className="text-sm">{error}</div>
+      </div>
+    );
   }
   
+  
   if (!erpData) {
-    return <div className="p-4 text-gray-600">No data available</div>;
-  }  
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-3 text-gray-600">
+        <svg
+          className="w-12 h-12 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m4 0a2 2 0 002-2V7a2 2 0 00-2-2h-3.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0012.586 3H8a2 2 0 00-2 2v12a2 2 0 002 2h8z"
+          />
+        </svg>
+        <div className="text-lg font-semibold">No Data Available</div>
+        <div className="text-sm text-gray-500">ERP data is currently unavailable or not loaded.</div>
+      </div>
+    );
+  }
+    
 
   const maxBalance = Math.max(...erpData.openingBalances.map(b => b.opBalance));
 
@@ -158,9 +199,9 @@ const filteredData = useFilteredERPData(erpData, filters);
               </TabsContent>
 
               <TabsContent value="compliance" className="space-y-6 min-h-[200px]">
-                <ComplianceKPICards complianceData={mockComplianceData} />
-                <ComplianceInsights complianceData={mockComplianceData} />
-                <ComplianceCharts complianceData={mockComplianceData} />
+                <ComplianceKPICards complianceData={erpData} />
+                <ComplianceInsights complianceData={erpData} />
+                <ComplianceCharts complianceData={erpData} />
               </TabsContent>
 
               <TabsContent value="analytics" className="space-y-6 min-h-[200px]">
@@ -214,16 +255,16 @@ const filteredData = useFilteredERPData(erpData, filters);
                       <div className="space-y-4 text-sm">
                         <div className="flex justify-between items-center">
                           <span className="text-gray-600">Vehicles in Fleet</span>
-                          <Badge variant="default">{mockComplianceData.vehicles.length}</Badge>
+                          <Badge variant="default">{erpData.vehicles.length}</Badge>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-gray-600">Active Drivers</span>
-                          <Badge variant="default">{mockComplianceData.drivers.length}</Badge>
+                          <Badge variant="default">{erpData.drivers.length}</Badge>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-gray-600">Active Routes</span>
                           <Badge variant="default">
-                            {new Set(mockComplianceData.routes.map(r => r.routeId)).size}
+                            {new Set(erpData.routes.map(r => r.routeId)).size}
                           </Badge>
                         </div>
                       </div>

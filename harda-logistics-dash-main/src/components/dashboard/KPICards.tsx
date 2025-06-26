@@ -10,11 +10,12 @@ import {
   AlertTriangle,
   CheckCircle
 } from 'lucide-react';
-import { MockERPData, AccountMaster } from '@/data/mockERPData';
+import { ERPData } from './ComplianceKPICards';
+import { AccountMaster } from '@/types';
 
 interface KPICardsProps {
   filteredData: AccountMaster[];
-  allData: MockERPData;
+  allData: ERPData;
 }
 
 const KPICards: React.FC<KPICardsProps> = ({ filteredData, allData }) => {

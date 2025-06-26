@@ -1,30 +1,25 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import { Button } from "@/components/ui/button";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
-import { MockERPData, AccountMaster } from '@/data/mockERPData';
-import { 
-  Table as TableIcon, 
-  Download, 
-  Eye, 
-  ChevronLeft, 
-  ChevronRight,
-  ArrowUpDown
+import {
+  Table as TableIcon, Download, Eye, ChevronLeft, ChevronRight, ArrowUpDown
 } from 'lucide-react';
+
+import { AccountMaster} from '@/types';
+
+export interface ERPData {
+  openingBalances: { acCode: string; opBalance: number }[];
+  bankDetails: { accountNo: string; bank: string; city: string; ifscCode: string }[];
+  gstDetails: { acCode: string; gstNo?: string; stateName?: string }[];
+}
 
 interface DataTableProps {
   filteredData: AccountMaster[];
-  allData: MockERPData;
+  allData: ERPData;
 }
 
 const DataTable: React.FC<DataTableProps> = ({ filteredData, allData }) => {
@@ -33,12 +28,11 @@ const DataTable: React.FC<DataTableProps> = ({ filteredData, allData }) => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const itemsPerPage = 10;
 
-  // Enhanced data with all related information
   const enhancedData = filteredData.map(account => {
     const balance = allData.openingBalances.find(b => b.acCode === account.acCode);
     const bankDetail = allData.bankDetails.find(b => b.accountNo === account.acCode);
     const gstDetail = allData.gstDetails.find(g => g.acCode === account.acCode);
-    
+
     return {
       ...account,
       balance: balance?.opBalance || 0,
@@ -50,16 +44,15 @@ const DataTable: React.FC<DataTableProps> = ({ filteredData, allData }) => {
     };
   });
 
-  // Sort data
   const sortedData = [...enhancedData].sort((a, b) => {
     let aValue: any = a[sortField as keyof typeof a];
     let bValue: any = b[sortField as keyof typeof b];
-    
+
     if (typeof aValue === 'string') {
       aValue = aValue.toLowerCase();
       bValue = bValue.toLowerCase();
     }
-    
+
     if (sortDirection === 'asc') {
       return aValue > bValue ? 1 : -1;
     } else {
@@ -67,7 +60,6 @@ const DataTable: React.FC<DataTableProps> = ({ filteredData, allData }) => {
     }
   });
 
-  // Pagination
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage);
@@ -133,28 +125,19 @@ const DataTable: React.FC<DataTableProps> = ({ filteredData, allData }) => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50/80">
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100/80 transition-colors"
-                  onClick={() => handleSort('acCode')}
-                >
+                <TableHead className="cursor-pointer hover:bg-gray-100/80 transition-colors" onClick={() => handleSort('acCode')}>
                   <div className="flex items-center space-x-1">
                     <span>Account Code</span>
                     <ArrowUpDown className="h-3 w-3" />
                   </div>
                 </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100/80 transition-colors"
-                  onClick={() => handleSort('name')}
-                >
+                <TableHead className="cursor-pointer hover:bg-gray-100/80 transition-colors" onClick={() => handleSort('name')}>
                   <div className="flex items-center space-x-1">
                     <span>Name</span>
                     <ArrowUpDown className="h-3 w-3" />
                   </div>
                 </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100/80 transition-colors"
-                  onClick={() => handleSort('balance')}
-                >
+                <TableHead className="cursor-pointer hover:bg-gray-100/80 transition-colors" onClick={() => handleSort('balance')}>
                   <div className="flex items-center space-x-1">
                     <span>Balance</span>
                     <ArrowUpDown className="h-3 w-3" />
@@ -164,10 +147,7 @@ const DataTable: React.FC<DataTableProps> = ({ filteredData, allData }) => {
                 <TableHead>Bank</TableHead>
                 <TableHead>GST Status</TableHead>
                 <TableHead>State</TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-gray-100/80 transition-colors"
-                  onClick={() => handleSort('branchId')}
-                >
+                <TableHead className="cursor-pointer hover:bg-gray-100/80 transition-colors" onClick={() => handleSort('branchId')}>
                   <div className="flex items-center space-x-1">
                     <span>Branch</span>
                     <ArrowUpDown className="h-3 w-3" />
@@ -257,20 +237,13 @@ const DataTable: React.FC<DataTableProps> = ({ filteredData, allData }) => {
           </Table>
         </div>
 
-        {/* Pagination */}
         <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-gray-500">
             Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, sortedData.length)} of {sortedData.length} entries
           </div>
           <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
+              <ChevronLeft className="h-4 w-4" /> Previous
             </Button>
             <div className="flex items-center space-x-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -284,7 +257,6 @@ const DataTable: React.FC<DataTableProps> = ({ filteredData, allData }) => {
                 } else {
                   pageNum = currentPage - 2 + i;
                 }
-                
                 return (
                   <Button
                     key={pageNum}
@@ -298,14 +270,8 @@ const DataTable: React.FC<DataTableProps> = ({ filteredData, allData }) => {
                 );
               })}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
+              Next <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

@@ -1,33 +1,55 @@
-
 import React, { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
   Area,
   AreaChart
 } from 'recharts';
-import { MockComplianceData } from '@/data/mockComplianceData';
 import { AlertTriangle, PieChart as PieChartIcon, TrendingUp, Route } from 'lucide-react';
+import { useERPData } from '@/hooks/useERPData';
 
-interface ComplianceChartsProps {
-  complianceData: MockComplianceData;
+interface Vehicle {
+  vehicleNo: string;
+  owner: string;
+  pucExpiry: string;
+  insuranceExpiry: string;
+  greenTaxExpiry: string;
 }
 
-const COLORS = [
-  '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', 
-  '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6366F1'
-];
+interface Driver {
+  driverName: string;
+  licenseExpiryDate: string;
+}
+
+interface RouteItem {
+  routeId: string;
+  vehicleNo: string;
+  driverName: string;
+}
+
+interface ERPData {
+  vehicles: Vehicle[];
+  drivers: Driver[];
+  routes: RouteItem[];
+}
+
+interface ComplianceChartsProps {
+  complianceData: ERPData;
+}
 
 const ComplianceCharts: React.FC<ComplianceChartsProps> = ({ complianceData }) => {
   const today = new Date();
@@ -42,27 +64,26 @@ const ComplianceCharts: React.FC<ComplianceChartsProps> = ({ complianceData }) =
     return new Date(dateString) < today;
   };
 
-  // Compliance status by route
   const routeComplianceData = useMemo(() => {
     const routeStats: { [key: string]: { compliant: number; nonCompliant: number; total: number } } = {};
-    
+
     complianceData.routes.forEach(route => {
       const vehicle = complianceData.vehicles.find(v => v.vehicleNo === route.vehicleNo);
       const driver = complianceData.drivers.find(d => d.driverName === route.driverName);
-      
+
       if (!routeStats[route.routeId]) {
         routeStats[route.routeId] = { compliant: 0, nonCompliant: 0, total: 0 };
       }
-      
+
       routeStats[route.routeId].total++;
-      
-      const vehicleCompliant = vehicle && 
-        !isExpired(vehicle.pucExpiry) && 
-        !isExpired(vehicle.insuranceExpiry) && 
+
+      const vehicleCompliant = vehicle &&
+        !isExpired(vehicle.pucExpiry) &&
+        !isExpired(vehicle.insuranceExpiry) &&
         !isExpired(vehicle.greenTaxExpiry);
-      
+
       const driverCompliant = driver && !isExpired(driver.licenseExpiryDate);
-      
+
       if (vehicleCompliant && driverCompliant) {
         routeStats[route.routeId].compliant++;
       } else {
@@ -78,7 +99,6 @@ const ComplianceCharts: React.FC<ComplianceChartsProps> = ({ complianceData }) =
     }));
   }, [complianceData]);
 
-  // Expiry categories data
   const expiryData = useMemo(() => {
     const categories = [
       {
@@ -116,7 +136,6 @@ const ComplianceCharts: React.FC<ComplianceChartsProps> = ({ complianceData }) =
     return categories;
   }, [complianceData]);
 
-  // Vehicles with multiple issues
   const vehicleIssuesData = useMemo(() => {
     return complianceData.vehicles.map(vehicle => {
       const issues = [];
@@ -136,7 +155,6 @@ const ComplianceCharts: React.FC<ComplianceChartsProps> = ({ complianceData }) =
     }).filter(v => v.issueCount > 0).sort((a, b) => b.issueCount - a.issueCount).slice(0, 10);
   }, [complianceData]);
 
-  // Monthly trend (mock data)
   const monthlyTrendData = [
     { month: 'Jan', expired: 28, compliant: 72 },
     { month: 'Feb', expired: 25, compliant: 75 },
@@ -162,11 +180,7 @@ const ComplianceCharts: React.FC<ComplianceChartsProps> = ({ complianceData }) =
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="route" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip 
-                formatter={(value: any, name: string) => [value, name === 'compliant' ? 'Compliant' : 'Non-Compliant']}
-                labelStyle={{ color: '#374151' }}
-                contentStyle={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-              />
+              <Tooltip formatter={(value: any, name: string) => [value, name === 'compliant' ? 'Compliant' : 'Non-Compliant']} />
               <Bar dataKey="compliant" stackId="a" fill="#10B981" radius={[0, 0, 0, 0]} />
               <Bar dataKey="nonCompliant" stackId="a" fill="#EF4444" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -219,27 +233,9 @@ const ComplianceCharts: React.FC<ComplianceChartsProps> = ({ complianceData }) =
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip 
-                formatter={(value: any, name: string) => [`${value}%`, name === 'compliant' ? 'Compliant' : 'Expired']}
-                labelStyle={{ color: '#374151' }}
-                contentStyle={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="compliant" 
-                stackId="1"
-                stroke="#10B981" 
-                fill="#10B981"
-                fillOpacity={0.6}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="expired" 
-                stackId="1"
-                stroke="#EF4444" 
-                fill="#EF4444"
-                fillOpacity={0.6}
-              />
+              <Tooltip formatter={(value: any, name: string) => [`${value}%`, name === 'compliant' ? 'Compliant' : 'Expired']} />
+              <Area type="monotone" dataKey="compliant" stackId="1" stroke="#10B981" fill="#10B981" fillOpacity={0.6} />
+              <Area type="monotone" dataKey="expired" stackId="1" stroke="#EF4444" fill="#EF4444" fillOpacity={0.6} />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>

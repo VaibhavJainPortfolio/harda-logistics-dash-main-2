@@ -7,8 +7,8 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { MockERPData } from '@/data/mockERPData';
 import { Filter, RotateCcw, Search } from 'lucide-react';
+import { ERPData } from './ComplianceKPICards';
 
 interface FilterPanelProps {
   filters: {
@@ -30,13 +30,19 @@ interface FilterPanelProps {
     accountStatus: string;
   }>>;
   maxBalance: number;
-  data: MockERPData;
+  data: ERPData;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters, maxBalance, data }) => {
-  const uniqueBranches = Array.from(new Set(data.accounts.map(acc => acc.branchId))).sort();
-  const uniqueBanks = Array.from(new Set(data.bankDetails.map(bank => bank.bank))).sort();
-  const uniqueStates = Array.from(new Set(data.gstDetails.map(gst => gst.stateName))).sort();
+  const uniqueBranches: string[] = Array.from(new Set<number>(data.accounts.map(acc => acc.branchId)))
+  .sort((a, b) => a - b)
+  .map(id => id.toString());
+
+  const uniqueBanks: string[] = Array.from(new Set(data.bankDetails.map(bank => bank.bank)) as Set<string>).sort();
+
+
+  const uniqueStates: string[] = Array.from(new Set<string>(data.gstDetails.map(gst => gst.stateName))).sort();
+
 
   const resetFilters = () => {
     setFilters({
